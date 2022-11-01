@@ -46,6 +46,14 @@ public class Main {
 
         deleteFile();
 
+        openZip("F://Games//saveGames//saveGames.zip");
+
+        GameProgress newPlayer = openProgress("F://Games//saveGames//player2.dat");
+
+        writeLog();
+
+        System.out.println(newPlayer);
+
     }
 
     public static void addNewFile(String parent) {
@@ -145,5 +153,42 @@ public class Main {
         }
         savingPlayer = new ArrayList<>();
     }
+
+    public static void openZip(String from) {
+        try (ZipInputStream zin = new ZipInputStream(
+                new FileInputStream(from))) {
+            ZipEntry entry;
+            String name;
+            while ((entry = zin.getNextEntry()) != null) {
+                name = entry.getName();
+                FileOutputStream fout = new FileOutputStream(name);
+                for (int i = zin.read(); i != -1; i = zin.read()) {
+                    fout.write(i);
+                }
+                fout.flush();
+                zin.closeEntry();
+                fout.close();
+                logging("Распаковка файла " + name + " прошла успешно");
+            }
+        } catch (Exception e) {
+            logging("Ошибка при распаковке файла");
+        }
+    }
+
+    public static GameProgress openProgress(String parent) {
+        GameProgress gameProgress = null;
+
+        try (FileInputStream fis = new FileInputStream(parent);
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
+
+            gameProgress = (GameProgress) ois.readObject();
+            logging("Найден новый игрок: " + gameProgress.getNamePlayer());
+
+        } catch (Exception e) {
+            logging("Ошибка при распаковке нового игрока");
+        }
+        return gameProgress;
+    }
+
 }
 
